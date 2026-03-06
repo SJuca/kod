@@ -13,7 +13,6 @@ body{
     justify-content:center;
     align-items:center;
     height:100vh;
-    margin:0;
 }
 
 .terminal{
@@ -45,7 +44,16 @@ h1{
     border:2px solid #0f0;
     padding:10px;
     margin-bottom:10px;
-    overflow-wrap: break-word;
+}
+
+.correct{
+    color:#fff2a0;
+    font-weight:bold;
+}
+
+.misplaced{
+    color:#ff3333;
+    font-weight:bold;
 }
 
 .keypad{
@@ -106,7 +114,7 @@ button:hover{
 </div>
 
 <script>
-// 4 számjegyű titkos kód generálása
+
 let secret = "";
 for(let i=0;i<4;i++){
     secret += Math.floor(Math.random()*10);
@@ -114,13 +122,11 @@ for(let i=0;i<4;i++){
 
 let input="";
 
-// Frissíti a kijelzőt
 function updateDisplay(){
     document.getElementById("display").innerText =
         input.padEnd(4,"-");
 }
 
-// Számok bevitele
 function press(num){
     if(input.length<4){
         input+=num;
@@ -128,13 +134,11 @@ function press(num){
     }
 }
 
-// Input törlése
 function clearInput(){
     input="";
     updateDisplay();
 }
 
-// Ellenőrzés
 function check(){
 
     if(input.length!==4){
@@ -145,16 +149,14 @@ function check(){
     let result="";
 
     for(let i=0;i<4;i++){
+
         if(input[i]===secret[i]){
-            // jó szám, jó helyen → sárga
-            result+=`<span style="color:#ffd400;font-weight:bold">${input[i]}</span>`;
+            result+=`<span class="correct">${input[i]}</span>`;
         }
         else if(secret.includes(input[i])){
-            // jó szám, rossz helyen → piros
-            result+=`<span style="color:#ff4040;font-weight:bold">${input[i]}</span>`;
+            result+=`<span class="misplaced">${input[i]}</span>`;
         }
         else{
-            // rossz szám → marad alap zöld
             result+=input[i];
         }
 
@@ -165,17 +167,8 @@ function check(){
     feedback.innerHTML = input + " → " + result + "<br>" + feedback.innerHTML;
 
     if(input===secret){
-        // Generálunk egy authorization kódot
-        const authCode = "AUTH-" + Math.random().toString(36).substring(2,8).toUpperCase();
-        localStorage.setItem("reactorAuthCode", authCode);
-
-        // Figyelmeztetés és átirányítás
-        setTimeout(()=>{
-            alert("HOZZÁFÉRÉS ENGEDÉLYEZVE ☢️\n\nAuthorization Code:\n" + authCode);
-            // Ide kell a Google Form linket írni
-            const formLink = "https://forms.gle/PASTE_YOUR_GOOGLE_FORM_LINK_HERE?code=" + authCode;
-            window.location.href = formLink;
-        }, 100);
+        alert("HOZZÁFÉRÉS ENGEDÉLYEZVE ☢️");
+        location.reload();
     }
 
     input="";
@@ -183,6 +176,7 @@ function check(){
 }
 
 updateDisplay();
+
 </script>
 
 </body>
