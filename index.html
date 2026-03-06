@@ -2,180 +2,290 @@
 <html lang="hu">
 <head>
 <meta charset="UTF-8">
-<title>REACTOR ACCESS TERMINAL</title>
+<title>Reaktor hozzáférési terminál</title>
 
 <style>
+
 body{
-    background:#020;
-    color:#0f0;
-    font-family: "Courier New", monospace;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
+margin:0;
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+font-family:monospace;
+color:#0f0;
+
+background:
+linear-gradient(rgba(0,0,0,.8),rgba(0,0,0,.95)),
+url("https://images.unsplash.com/photo-1545259741-2ea3ebf61fa3") center/cover;
 }
 
-.terminal{
-    background:#001100;
-    border:4px solid #0f0;
-    padding:20px;
-    width:420px;
-    box-shadow:0 0 20px #0f0;
+.panel{
+width:360px;
+padding:25px;
+background:#001a12;
+border:2px solid #00ff88;
+border-radius:12px;
+box-shadow:
+0 0 15px #00ff88,
+0 0 40px #00ff88 inset;
+text-align:center;
 }
 
 h1{
-    text-align:center;
-    font-size:20px;
-    margin-bottom:10px;
+font-size:18px;
+margin-top:0;
+letter-spacing:2px;
 }
 
 .display{
-    background:black;
-    padding:15px;
-    font-size:30px;
-    letter-spacing:10px;
-    text-align:center;
-    border:2px solid #0f0;
-    margin-bottom:10px;
+background:black;
+color:#00ff88;
+font-size:32px;
+padding:12px;
+margin-bottom:12px;
+letter-spacing:10px;
+border:1px solid #00ff88;
+box-shadow:
+0 0 10px #00ff88 inset,
+0 0 10px #00ff88;
 }
 
-.feedback{
-    min-height:80px;
-    border:2px solid #0f0;
-    padding:10px;
-    margin-bottom:10px;
+.timer{
+margin-bottom:10px;
+font-size:16px;
 }
 
-.correct{
-    color:#fff2a0;
-    font-weight:bold;
+.timer.warning{
+color:#ff3030;
+animation:blink 1s infinite;
 }
 
-.misplaced{
-    color:#ff3333;
-    font-weight:bold;
+@keyframes blink{
+0%{opacity:1}
+50%{opacity:.3}
+100%{opacity:1}
 }
 
 .keypad{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:10px;
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:8px;
 }
 
 button{
-    background:#002200;
-    color:#0f0;
-    border:2px solid #0f0;
-    padding:15px;
-    font-size:20px;
-    cursor:pointer;
+background:#002b1f;
+border:1px solid #00ff88;
+color:#00ff88;
+font-size:18px;
+padding:12px;
+cursor:pointer;
+transition:.15s;
 }
 
 button:hover{
-    background:#003300;
+background:#005c40;
+box-shadow:0 0 10px #00ff88;
 }
 
-.controls{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:10px;
-    margin-top:10px;
+.log{
+margin-top:15px;
+font-size:14px;
+text-align:left;
+max-height:120px;
+overflow:auto;
 }
+
+.red{color:#ff4040}
+.yellow{color:#ffd740}
+
+.popup{
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:#001a12;
+border:2px solid #00ff88;
+padding:30px;
+box-shadow:0 0 40px #00ff88;
+display:none;
+text-align:center;
+}
+
+.popup h2{
+margin-top:0;
+}
+
+a{
+color:#7fff7f;
+font-size:18px;
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="terminal">
-<h1>REACTOR ACCESS TERMINAL</h1>
+<div class="panel">
+
+<h1>REAKTOR HOZZÁFÉRÉS</h1>
 
 <div id="display" class="display">----</div>
 
-<div id="feedback" class="feedback"></div>
+<div id="timer" class="timer">
+Hátralévő idő: <span id="time">120</span> s
+</div>
 
 <div class="keypad">
-<button onclick="press(1)">1</button>
-<button onclick="press(2)">2</button>
-<button onclick="press(3)">3</button>
-<button onclick="press(4)">4</button>
-<button onclick="press(5)">5</button>
-<button onclick="press(6)">6</button>
-<button onclick="press(7)">7</button>
-<button onclick="press(8)">8</button>
-<button onclick="press(9)">9</button>
-<button onclick="press(0)">0</button>
+
+<button onclick="add(1)">1</button>
+<button onclick="add(2)">2</button>
+<button onclick="add(3)">3</button>
+
+<button onclick="add(4)">4</button>
+<button onclick="add(5)">5</button>
+<button onclick="add(6)">6</button>
+
+<button onclick="add(7)">7</button>
+<button onclick="add(8)">8</button>
+<button onclick="add(9)">9</button>
+
+<button onclick="cancel()">C</button>
+<button onclick="add(0)">0</button>
+<button onclick="enter()">ENTER</button>
+
 </div>
 
-<div class="controls">
-<button onclick="check()">ENTER</button>
-<button onclick="clearInput()">C</button>
+<div id="log" class="log"></div>
+
 </div>
+
+<div id="popup" class="popup">
+
+<h2>BELÉPÉS ENGEDÉLYEZVE</h2>
+
+<p>
+<a href="https://forms.gle/" target="_blank">
+Tovább az engedélyezési űrlaphoz
+</a>
+</p>
 
 </div>
 
 <script>
 
-let secret = "";
-for(let i=0;i<4;i++){
-    secret += Math.floor(Math.random()*10);
-}
+let code=Math.floor(1000+Math.random()*9000).toString()
+let input=""
 
-let input="";
+function beep(){
+let ctx=new (window.AudioContext||window.webkitAudioContext)()
+let osc=ctx.createOscillator()
+osc.connect(ctx.destination)
+osc.start()
+osc.frequency.value=500
+setTimeout(()=>osc.stop(),80)
+}
 
 function updateDisplay(){
-    document.getElementById("display").innerText =
-        input.padEnd(4,"-");
+let d=input.padEnd(4,"-")
+document.getElementById("display").innerText=d
 }
 
-function press(num){
-    if(input.length<4){
-        input+=num;
-        updateDisplay();
-    }
+function add(n){
+if(input.length<4){
+input+=n
+updateDisplay()
+beep()
+}
 }
 
-function clearInput(){
-    input="";
-    updateDisplay();
+function cancel(){
+input=input.slice(0,-1)
+updateDisplay()
+beep()
 }
 
-function check(){
+function enter(){
 
-    if(input.length!==4){
-        alert("4 számjegy kell!");
-        return;
-    }
+if(input.length!==4)return
 
-    let result="";
+beep()
 
-    for(let i=0;i<4;i++){
+let result=""
+let usedCode=[false,false,false,false]
+let usedInput=[false,false,false,false]
 
-        if(input[i]===secret[i]){
-            result+=`<span class="correct">${input[i]}</span>`;
-        }
-        else if(secret.includes(input[i])){
-            result+=`<span class="misplaced">${input[i]}</span>`;
-        }
-        else{
-            result+=input[i];
-        }
+for(let i=0;i<4;i++){
 
-        result+=" ";
-    }
-
-    let feedback=document.getElementById("feedback");
-    feedback.innerHTML = input + " → " + result + "<br>" + feedback.innerHTML;
-
-    if(input===secret){
-        alert("HOZZÁFÉRÉS ENGEDÉLYEZVE ☢️");
-        location.reload();
-    }
-
-    input="";
-    updateDisplay();
+if(input[i]===code[i]){
+result+=`<span class="red">${input[i]}</span>`
+usedCode[i]=true
+usedInput[i]=true
+}else{
+result+=input[i]
 }
 
-updateDisplay();
+}
+
+for(let i=0;i<4;i++){
+
+if(!usedInput[i]){
+
+for(let j=0;j<4;j++){
+
+if(!usedCode[j] && input[i]===code[j]){
+
+result=result.replace(input[i],
+`<span class="yellow">${input[i]}</span>`)
+
+usedCode[j]=true
+break
+
+}
+
+}
+
+}
+
+}
+
+let log=document.getElementById("log")
+log.innerHTML=result+"<br>"+log.innerHTML
+
+if(input===code){
+document.getElementById("popup").style.display="block"
+}
+
+input=""
+updateDisplay()
+
+}
+
+let time=120
+
+let timer=setInterval(()=>{
+
+time--
+
+document.getElementById("time").innerText=time
+
+if(time<20){
+document.getElementById("timer").classList.add("warning")
+}
+
+if(time<=0){
+
+clearInterval(timer)
+
+alert("REAKTOR ZÁROLVA – HOZZÁFÉRÉS MEGTAGADVA")
+
+location.reload()
+
+}
+
+},1000)
+
+updateDisplay()
 
 </script>
 
