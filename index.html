@@ -3,85 +3,77 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>REACTOR ACCESS TERMINAL</title>
+<title>REACTOR CORE ACCESS</title>
+
 <style>
+
 body{
-background:#000 url('https://images.pexels.com/photos/55830/power-plant-control-room-electric-old-55830.jpeg) center/cover no-repeat;
-color:#00ff9c;
-font-family:"Courier New",monospace;
 margin:0;
+height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-height:100vh;
+font-family:"Courier New",monospace;
+color:#00ff9c;
+background:#000;
 overflow:hidden;
 }
 
-/* DARK OVERLAY */
-body:after{
+/* reactor control room background */
+body::before{
 content:"";
 position:fixed;
-left:0;right:0;top:0;bottom:0;
-background:rgba(0,20,10,0.75);
-pointer-events:none;
+inset:0;
+background:url("https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1600&q=60") center/cover no-repeat;
+filter:brightness(0.35);
+z-index:0;
 }
 
-/* CRT EFFECT */
-body:before{
+/* CRT scanlines */
+body::after{
 content:"";
 position:fixed;
-top:0;
-left:0;
-right:0;
-bottom:0;
-pointer-events:none;
+inset:0;
 background:repeating-linear-gradient(
 0deg,
-rgba(0,255,120,0.06),
-rgba(0,255,120,0.06) 2px,
+rgba(0,255,120,0.05) 0px,
+rgba(0,255,120,0.05) 2px,
 transparent 2px,
 transparent 4px
 );
-animation:flicker 0.15s infinite;
-}
-
-@keyframes flicker{
-0%{opacity:.9}
-50%{opacity:.95}
-100%{opacity:.9}
+pointer-events:none;
+z-index:2;
 }
 
 .terminal{
+position:relative;
+z-index:3;
 background:#001a12;
 border:3px solid #00ff9c;
-padding:20px;
+padding:25px;
 width:420px;
-max-width:95vw;
+max-width:92vw;
 box-shadow:0 0 25px #00ff9c;
 border-radius:6px;
-position:relative;
-z-index:1;
 }
 
 h1{
 text-align:center;
-font-size:18px;
-margin-bottom:8px;
-letter-spacing:2px;
+margin-top:0;
+letter-spacing:3px;
 }
 
 .timer{
 text-align:center;
 margin-bottom:10px;
-font-size:14px;
 }
 
 .display{
 background:#000;
 border:2px solid #00ff9c;
 font-size:34px;
-letter-spacing:12px;
-padding:14px;
+letter-spacing:14px;
+padding:12px;
 text-align:center;
 margin-bottom:12px;
 }
@@ -96,8 +88,15 @@ margin-bottom:12px;
 font-size:18px;
 }
 
-.correct{color:#ffd400;font-weight:bold}
-.misplaced{color:#ff4040;font-weight:bold}
+.correct{
+color:#ffd400;
+font-weight:bold;
+}
+
+.misplaced{
+color:#ff4040;
+font-weight:bold;
+}
 
 .keypad{
 display:grid;
@@ -112,22 +111,26 @@ border:2px solid #00ff9c;
 padding:16px;
 font-size:20px;
 cursor:pointer;
-border-radius:4px;
 }
 
-button:active{
+button:hover{
 background:#004d36;
-transform:scale(.96);
 }
 
+.controls{
+margin-top:10px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+}
+
+/* alarm light */
 .alarm-light{
 width:18px;
 height:18px;
 border-radius:50%;
 background:#400;
 margin:8px auto 12px auto;
-box-shadow:0 0 4px #200 inset;
-animation:alarmOff 1s infinite;
 }
 
 .alarm-on{
@@ -140,13 +143,10 @@ animation:alarmFlash 0.6s infinite;
 100%{background:#400;box-shadow:0 0 4px #200}
 }
 
-@keyframes alarmOff{
-0%,100%{background:#400}
-}
-
+/* success screen */
 .message-screen{
 position:fixed;
-left:0;right:0;top:0;bottom:0;
+inset:0;
 background:#000;
 color:#00ff9c;
 font-family:"Courier New",monospace;
@@ -154,39 +154,31 @@ display:flex;
 flex-direction:column;
 justify-content:center;
 align-items:center;
-font-size:28px;
+font-size:30px;
 text-align:center;
-z-index:5;
 letter-spacing:3px;
+z-index:10;
 }
 
 .message-screen a{
-margin-top:20px;
+margin-top:30px;
 color:#00ff9c;
 border:2px solid #00ff9c;
-padding:10px 18px;
+padding:12px 20px;
 text-decoration:none;
 }
 
-.controls{
-margin-top:8px;
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:8px;
-}
-
-@media (max-width:500px){
-.display{font-size:28px}
-.feedback{font-size:16px}
-}
 </style>
 </head>
 
 <body>
 
 <div class="terminal">
+
 <h1>REACTOR CORE ACCESS</h1>
+
 <div class="timer">REACTOR TIMER: <span id="timer">120</span>s</div>
+
 <div class="alarm-light" id="alarmLight"></div>
 
 <div id="display" class="display">----</div>
@@ -210,11 +202,11 @@ gap:8px;
 <button onclick="check()">ENTER</button>
 <button onclick="clearInput()">CLEAR</button>
 </div>
+
 </div>
 
 <script>
 
-/* SECRET CODE */
 let secret="";
 for(let i=0;i<4;i++) secret+=Math.floor(Math.random()*10);
 
@@ -252,32 +244,6 @@ updateDisplay();
 function clearInput(){
 input="";
 updateDisplay();
-beep(200,120);
-}
-
-function mastermind(guess){
-let correct=0;
-let misplaced=0;
-
-let secretArr=secret.split("");
-let guessArr=guess.split("");
-
-for(let i=0;i<4;i++){
-if(guessArr[i]===secretArr[i]){
-correct++;
-secretArr[i]=null;
-guessArr[i]=null;
-}
-}
-
-for(let i=0;i<4;i++){
-if(guessArr[i] && secretArr.includes(guessArr[i])){
-misplaced++;
-secretArr[secretArr.indexOf(guessArr[i])]=null;
-}
-}
-
-return {correct,misplaced};
 }
 
 function check(){
@@ -298,15 +264,12 @@ resultHTML+=input[i]+" ";
 }
 }
 
-let mm=mastermind(input);
-
-feedback.innerHTML=`${input} → ${resultHTML} | ✔ ${mm.correct} | ? ${mm.misplaced}<br>`+feedback.innerHTML;
+feedback.innerHTML=`${input} → ${resultHTML}<br>`+feedback.innerHTML;
 
 if(input===secret){
 beep(1200,300);
 
-const authCode = "AUTH-" + Math.random().toString(36).substring(2,8).toUpperCase();
-localStorage.setItem("reactorAuthCode",authCode);
+const authCode="AUTH-"+Math.random().toString(36).substring(2,8).toUpperCase();
 
 const screen=document.createElement("div");
 screen.className="message-screen";
@@ -316,30 +279,31 @@ SIKERES BELÉPÉS ☢<br><br>
 AUTORIZÁCIÓS KÓD:<br>
 ${authCode}
 <br><br>
-<a href="https://forms.gle/PASTE_YOUR_GOOGLE_FORM_LINK_HERE?code=${authCode}">TOVÁBB A HITLESÍTÉSHEZ</a>
+<a href="https://forms.gle/PASTE_YOUR_GOOGLE_FORM_LINK_HERE?code=${authCode}">
+TOVÁBB A HITELESÍTÉSHEZ
+</a>
 `;
 
+
 document.body.appendChild(screen);
-},300);
-},300);
 }
 
 input="";
 updateDisplay();
 }
 
-/* TIMER (meltdown mode) */
 setInterval(()=>{
+
 time--;
 timerEl.textContent=time;
 
 if(time<20){
 beep(150,60);
 document.getElementById("alarmLight").classList.add("alarm-on");
-}(150,60);
+}
 
 if(time<=0){
-alert("REACTOR MELTDOWN");
+alert("HOZZÁFÉRÉS MEGTAGADVA – REACTOR LOCKDOWN");
 location.reload();
 }
 
