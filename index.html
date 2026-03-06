@@ -2,7 +2,7 @@
 <html lang="hu">
 <head>
 <meta charset="UTF-8">
-<title>Reaktor hozzáférési terminál</title>
+<title>Reaktor kódpanel</title>
 
 <style>
 
@@ -10,54 +10,53 @@ body{
 margin:0;
 height:100vh;
 display:flex;
-align-items:center;
 justify-content:center;
+align-items:center;
 font-family:monospace;
 color:#0f0;
 
 background:
-linear-gradient(rgba(0,0,0,.8),rgba(0,0,0,.95)),
-url("https://images.unsplash.com/photo-1545259741-2ea3ebf61fa3") center/cover;
+linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.9)),
+url("https://images.unsplash.com/photo-1601582589907-f92af5ed9db8") center/cover;
+
 }
 
+/* PANEL */
+
 .panel{
-width:360px;
-padding:25px;
-background:#001a12;
+background:#021;
 border:2px solid #00ff88;
-border-radius:12px;
+padding:25px;
 box-shadow:
-0 0 15px #00ff88,
+0 0 20px #00ff88,
 0 0 40px #00ff88 inset;
+border-radius:12px;
+width:340px;
 text-align:center;
 }
 
-h1{
-font-size:18px;
-margin-top:0;
-letter-spacing:2px;
-}
+/* KIJELZŐ */
 
 .display{
 background:black;
 color:#00ff88;
-font-size:32px;
+font-size:30px;
 padding:12px;
 margin-bottom:12px;
-letter-spacing:10px;
+letter-spacing:12px;
 border:1px solid #00ff88;
-box-shadow:
-0 0 10px #00ff88 inset,
-0 0 10px #00ff88;
+box-shadow:0 0 12px #00ff88 inset;
 }
 
+/* IDŐZÍTŐ */
+
 .timer{
-margin-bottom:10px;
+margin-bottom:12px;
 font-size:16px;
 }
 
 .timer.warning{
-color:#ff3030;
+color:#ff4040;
 animation:blink 1s infinite;
 }
 
@@ -67,31 +66,35 @@ animation:blink 1s infinite;
 100%{opacity:1}
 }
 
+/* BILLENTYŰK */
+
 .keypad{
 display:grid;
 grid-template-columns:repeat(3,1fr);
 gap:8px;
+margin-top:10px;
 }
 
 button{
-background:#002b1f;
+padding:14px;
+font-size:18px;
+background:#032;
 border:1px solid #00ff88;
 color:#00ff88;
-font-size:18px;
-padding:12px;
 cursor:pointer;
-transition:.15s;
 }
 
 button:hover{
-background:#005c40;
+background:#064;
 box-shadow:0 0 10px #00ff88;
 }
 
+/* LOG */
+
 .log{
 margin-top:15px;
-font-size:14px;
 text-align:left;
+font-size:14px;
 max-height:120px;
 overflow:auto;
 }
@@ -99,16 +102,18 @@ overflow:auto;
 .red{color:#ff4040}
 .yellow{color:#ffd740}
 
+/* POPUP */
+
 .popup{
 position:fixed;
 top:50%;
 left:50%;
 transform:translate(-50%,-50%);
-background:#001a12;
+background:#011;
 border:2px solid #00ff88;
 padding:30px;
-box-shadow:0 0 40px #00ff88;
 display:none;
+box-shadow:0 0 35px #00ff88;
 text-align:center;
 }
 
@@ -128,11 +133,11 @@ font-size:18px;
 
 <div class="panel">
 
-<h1>REAKTOR HOZZÁFÉRÉS</h1>
+<h2>REAKTOR HOZZÁFÉRÉS</h2>
 
-<div id="display" class="display">----</div>
+<div class="display" id="display">----</div>
 
-<div id="timer" class="timer">
+<div class="timer" id="timer">
 Hátralévő idő: <span id="time">120</span> s
 </div>
 
@@ -156,15 +161,15 @@ Hátralévő idő: <span id="time">120</span> s
 
 </div>
 
-<div id="log" class="log"></div>
+<div class="log" id="log"></div>
 
 </div>
 
-<div id="popup" class="popup">
+<div class="popup" id="popup">
 
-<h2>BELÉPÉS ENGEDÉLYEZVE</h2>
+<h2 id="popupText"></h2>
 
-<p>
+<p id="formLink" style="display:none;">
 <a href="https://forms.gle/" target="_blank">
 Tovább az engedélyezési űrlaphoz
 </a>
@@ -175,16 +180,8 @@ Tovább az engedélyezési űrlaphoz
 <script>
 
 let code=Math.floor(1000+Math.random()*9000).toString()
-let input=""
 
-function beep(){
-let ctx=new (window.AudioContext||window.webkitAudioContext)()
-let osc=ctx.createOscillator()
-osc.connect(ctx.destination)
-osc.start()
-osc.frequency.value=500
-setTimeout(()=>osc.stop(),80)
-}
+let input=""
 
 function updateDisplay(){
 let d=input.padEnd(4,"-")
@@ -195,21 +192,17 @@ function add(n){
 if(input.length<4){
 input+=n
 updateDisplay()
-beep()
 }
 }
 
 function cancel(){
 input=input.slice(0,-1)
 updateDisplay()
-beep()
 }
 
 function enter(){
 
 if(input.length!==4)return
-
-beep()
 
 let result=""
 let usedCode=[false,false,false,false]
@@ -218,11 +211,15 @@ let usedInput=[false,false,false,false]
 for(let i=0;i<4;i++){
 
 if(input[i]===code[i]){
+
 result+=`<span class="red">${input[i]}</span>`
 usedCode[i]=true
 usedInput[i]=true
+
 }else{
+
 result+=input[i]
+
 }
 
 }
@@ -253,13 +250,28 @@ let log=document.getElementById("log")
 log.innerHTML=result+"<br>"+log.innerHTML
 
 if(input===code){
-document.getElementById("popup").style.display="block"
+
+showPopup("BELÉPÉS ENGEDÉLYEZVE",true)
+
 }
 
 input=""
 updateDisplay()
 
 }
+
+function showPopup(text,success){
+
+document.getElementById("popupText").innerText=text
+
+if(success)
+document.getElementById("formLink").style.display="block"
+
+document.getElementById("popup").style.display="block"
+
+}
+
+/* IDŐZÍTŐ */
 
 let time=120
 
@@ -269,17 +281,14 @@ time--
 
 document.getElementById("time").innerText=time
 
-if(time<20){
+if(time<20)
 document.getElementById("timer").classList.add("warning")
-}
 
 if(time<=0){
 
 clearInterval(timer)
 
-alert("REAKTOR ZÁROLVA – HOZZÁFÉRÉS MEGTAGADVA")
-
-location.reload()
+showPopup("HOZZÁFÉRÉS MEGTAGADVA",false)
 
 }
 
