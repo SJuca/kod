@@ -2,299 +2,350 @@
 <html lang="hu">
 <head>
 <meta charset="UTF-8">
-<title>Reaktor kódpanel</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REACTOR ACCESS TERMINAL</title>
 <style>
-
 body{
+background:#000 url('https://images.pexels.com/photos/55830/power-plant-control-room-electric-old-55830.jpeg) center/cover no-repeat;
+color:#00ff9c;
+font-family:"Courier New",monospace;
 margin:0;
-height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-font-family:monospace;
-color:#0f0;
-
-background:
-linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.9)),
-url("https://images.unsplash.com/photo-1601582589907-f92af5ed9db8") center/cover;
-
+height:100vh;
+overflow:hidden;
 }
 
-/* PANEL */
+/* DARK OVERLAY */
+body:after{
+content:"";
+position:fixed;
+left:0;right:0;top:0;bottom:0;
+background:rgba(0,20,10,0.75);
+pointer-events:none;
+}
 
-.panel{
-background:#021;
-border:2px solid #00ff88;
-padding:25px;
-box-shadow:
-0 0 20px #00ff88,
-0 0 40px #00ff88 inset;
-border-radius:12px;
-width:340px;
+/* CRT EFFECT */
+body:before{
+content:"";
+position:fixed;
+top:0;
+left:0;
+right:0;
+bottom:0;
+pointer-events:none;
+background:repeating-linear-gradient(
+0deg,
+rgba(0,255,120,0.06),
+rgba(0,255,120,0.06) 2px,
+transparent 2px,
+transparent 4px
+);
+animation:flicker 0.15s infinite;
+}
+
+@keyframes flicker{
+0%{opacity:.9}
+50%{opacity:.95}
+100%{opacity:.9}
+}
+
+.terminal{
+background:#001a12;
+border:3px solid #00ff9c;
+padding:20px;
+width:420px;
+max-width:95vw;
+box-shadow:0 0 25px #00ff9c;
+border-radius:6px;
+position:relative;
+z-index:1;
+}
+
+h1{
 text-align:center;
+font-size:18px;
+margin-bottom:8px;
+letter-spacing:2px;
 }
-
-/* KIJELZŐ */
-
-.display{
-background:black;
-color:#00ff88;
-font-size:30px;
-padding:12px;
-margin-bottom:12px;
-letter-spacing:12px;
-border:1px solid #00ff88;
-box-shadow:0 0 12px #00ff88 inset;
-}
-
-/* IDŐZÍTŐ */
 
 .timer{
+text-align:center;
+margin-bottom:10px;
+font-size:14px;
+}
+
+.display{
+background:#000;
+border:2px solid #00ff9c;
+font-size:34px;
+letter-spacing:12px;
+padding:14px;
+text-align:center;
 margin-bottom:12px;
-font-size:16px;
 }
 
-.timer.warning{
-color:#ff4040;
-animation:blink 1s infinite;
+.feedback{
+background:#000;
+border:2px solid #00ff9c;
+height:120px;
+overflow:auto;
+padding:10px;
+margin-bottom:12px;
+font-size:18px;
 }
 
-@keyframes blink{
-0%{opacity:1}
-50%{opacity:.3}
-100%{opacity:1}
-}
-
-/* BILLENTYŰK */
+.correct{color:#ffd400;font-weight:bold}
+.misplaced{color:#ff4040;font-weight:bold}
 
 .keypad{
 display:grid;
 grid-template-columns:repeat(3,1fr);
 gap:8px;
-margin-top:10px;
 }
 
 button{
-padding:14px;
-font-size:18px;
-background:#032;
-border:1px solid #00ff88;
-color:#00ff88;
+background:#00281c;
+color:#00ff9c;
+border:2px solid #00ff9c;
+padding:16px;
+font-size:20px;
 cursor:pointer;
+border-radius:4px;
 }
 
-button:hover{
-background:#064;
-box-shadow:0 0 10px #00ff88;
+button:active{
+background:#004d36;
+transform:scale(.96);
 }
 
-/* LOG */
-
-.log{
-margin-top:15px;
-text-align:left;
-font-size:14px;
-max-height:120px;
-overflow:auto;
+.alarm-light{
+width:18px;
+height:18px;
+border-radius:50%;
+background:#400;
+margin:8px auto 12px auto;
+box-shadow:0 0 4px #200 inset;
+animation:alarmOff 1s infinite;
 }
 
-.red{color:#ff4040}
-.yellow{color:#ffd740}
+.alarm-on{
+animation:alarmFlash 0.6s infinite;
+}
 
-/* POPUP */
+@keyframes alarmFlash{
+0%{background:#400;box-shadow:0 0 4px #200}
+50%{background:#ff0000;box-shadow:0 0 18px #ff0000}
+100%{background:#400;box-shadow:0 0 4px #200}
+}
 
-.popup{
+@keyframes alarmOff{
+0%,100%{background:#400}
+}
+
+.message-screen{
 position:fixed;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-background:#011;
-border:2px solid #00ff88;
-padding:30px;
-display:none;
-box-shadow:0 0 35px #00ff88;
+left:0;right:0;top:0;bottom:0;
+background:#000;
+color:#00ff9c;
+font-family:"Courier New",monospace;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+font-size:28px;
 text-align:center;
+z-index:5;
+letter-spacing:3px;
 }
 
-.popup h2{
-margin-top:0;
+.message-screen a{
+margin-top:20px;
+color:#00ff9c;
+border:2px solid #00ff9c;
+padding:10px 18px;
+text-decoration:none;
 }
 
-a{
-color:#7fff7f;
-font-size:18px;
+.controls{
+margin-top:8px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
 }
 
+@media (max-width:500px){
+.display{font-size:28px}
+.feedback{font-size:16px}
+}
 </style>
 </head>
 
 <body>
 
-<div class="panel">
+<div class="terminal">
+<h1>REACTOR CORE ACCESS</h1>
+<div class="timer">REACTOR TIMER: <span id="timer">120</span>s</div>
+<div class="alarm-light" id="alarmLight"></div>
 
-<h2>REAKTOR HOZZÁFÉRÉS</h2>
+<div id="display" class="display">----</div>
 
-<div class="display" id="display">----</div>
-
-<div class="timer" id="timer">
-Hátralévő idő: <span id="time">120</span> s
-</div>
+<div id="feedback" class="feedback"></div>
 
 <div class="keypad">
-
-<button onclick="add(1)">1</button>
-<button onclick="add(2)">2</button>
-<button onclick="add(3)">3</button>
-
-<button onclick="add(4)">4</button>
-<button onclick="add(5)">5</button>
-<button onclick="add(6)">6</button>
-
-<button onclick="add(7)">7</button>
-<button onclick="add(8)">8</button>
-<button onclick="add(9)">9</button>
-
-<button onclick="cancel()">C</button>
-<button onclick="add(0)">0</button>
-<button onclick="enter()">ENTER</button>
-
+<button onclick="press(1)">1</button>
+<button onclick="press(2)">2</button>
+<button onclick="press(3)">3</button>
+<button onclick="press(4)">4</button>
+<button onclick="press(5)">5</button>
+<button onclick="press(6)">6</button>
+<button onclick="press(7)">7</button>
+<button onclick="press(8)">8</button>
+<button onclick="press(9)">9</button>
+<button onclick="press(0)">0</button>
 </div>
 
-<div class="log" id="log"></div>
-
+<div class="controls">
+<button onclick="check()">ENTER</button>
+<button onclick="clearInput()">CLEAR</button>
 </div>
-
-<div class="popup" id="popup">
-
-<h2 id="popupText"></h2>
-
-<p id="formLink" style="display:none;">
-<a href="https://forms.gle/" target="_blank">
-Tovább az engedélyezési űrlaphoz
-</a>
-</p>
-
 </div>
 
 <script>
 
-let code=Math.floor(1000+Math.random()*9000).toString()
+/* SECRET CODE */
+let secret="";
+for(let i=0;i<4;i++) secret+=Math.floor(Math.random()*10);
 
-let input=""
+let input="";
+let time=120;
+
+const display=document.getElementById("display");
+const feedback=document.getElementById("feedback");
+const timerEl=document.getElementById("timer");
+
+function beep(freq,duration){
+const ctx=new(window.AudioContext||window.webkitAudioContext)();
+const osc=ctx.createOscillator();
+const gain=ctx.createGain();
+osc.connect(gain);
+gain.connect(ctx.destination);
+osc.frequency.value=freq;
+osc.start();
+gain.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+duration/1000);
+setTimeout(()=>ctx.close(),duration);
+}
 
 function updateDisplay(){
-let d=input.padEnd(4,"-")
-document.getElementById("display").innerText=d
+display.innerText=input.padEnd(4,"-");
 }
 
-function add(n){
+function press(n){
 if(input.length<4){
-input+=n
-updateDisplay()
+input+=n;
+beep(600,80);
+updateDisplay();
 }
 }
 
-function cancel(){
-input=input.slice(0,-1)
-updateDisplay()
+function clearInput(){
+input="";
+updateDisplay();
+beep(200,120);
 }
 
-function enter(){
+function mastermind(guess){
+let correct=0;
+let misplaced=0;
 
-if(input.length!==4)return
-
-let result=""
-let usedCode=[false,false,false,false]
-let usedInput=[false,false,false,false]
+let secretArr=secret.split("");
+let guessArr=guess.split("");
 
 for(let i=0;i<4;i++){
-
-if(input[i]===code[i]){
-
-result+=`<span class="red">${input[i]}</span>`
-usedCode[i]=true
-usedInput[i]=true
-
-}else{
-
-result+=input[i]
-
+if(guessArr[i]===secretArr[i]){
+correct++;
+secretArr[i]=null;
+guessArr[i]=null;
 }
-
 }
 
 for(let i=0;i<4;i++){
-
-if(!usedInput[i]){
-
-for(let j=0;j<4;j++){
-
-if(!usedCode[j] && input[i]===code[j]){
-
-result=result.replace(input[i],
-`<span class="yellow">${input[i]}</span>`)
-
-usedCode[j]=true
-break
-
+if(guessArr[i] && secretArr.includes(guessArr[i])){
+misplaced++;
+secretArr[secretArr.indexOf(guessArr[i])]=null;
+}
 }
 
+return {correct,misplaced};
 }
 
+function check(){
+
+if(input.length!==4) return;
+
+let resultHTML="";
+
+for(let i=0;i<4;i++){
+if(input[i]===secret[i]){
+resultHTML+=`<span class='correct'>${input[i]}</span> `;
+}
+else if(secret.includes(input[i])){
+resultHTML+=`<span class='misplaced'>${input[i]}</span> `;
+}
+else{
+resultHTML+=input[i]+" ";
+}
 }
 
+let mm=mastermind(input);
+
+feedback.innerHTML=`${input} → ${resultHTML} | ✔ ${mm.correct} | ? ${mm.misplaced}<br>`+feedback.innerHTML;
+
+if(input===secret){
+beep(1200,300);
+
+const authCode = "AUTH-" + Math.random().toString(36).substring(2,8).toUpperCase();
+localStorage.setItem("reactorAuthCode",authCode);
+
+const screen=document.createElement("div");
+screen.className="message-screen";
+
+screen.innerHTML=`
+SIKERES BELÉPÉS ☢<br><br>
+AUTORIZÁCIÓS KÓD:<br>
+${authCode}
+<br><br>
+<a href="https://forms.gle/PASTE_YOUR_GOOGLE_FORM_LINK_HERE?code=${authCode}">TOVÁBB A HITLESÍTÉSHEZ</a>
+`;
+
+document.body.appendChild(screen);
+},300);
+},300);
 }
 
-let log=document.getElementById("log")
-log.innerHTML=result+"<br>"+log.innerHTML
-
-if(input===code){
-
-showPopup("BELÉPÉS ENGEDÉLYEZVE",true)
-
+input="";
+updateDisplay();
 }
 
-input=""
-updateDisplay()
+/* TIMER (meltdown mode) */
+setInterval(()=>{
+time--;
+timerEl.textContent=time;
 
-}
-
-function showPopup(text,success){
-
-document.getElementById("popupText").innerText=text
-
-if(success)
-document.getElementById("formLink").style.display="block"
-
-document.getElementById("popup").style.display="block"
-
-}
-
-/* IDŐZÍTŐ */
-
-let time=120
-
-let timer=setInterval(()=>{
-
-time--
-
-document.getElementById("time").innerText=time
-
-if(time<20)
-document.getElementById("timer").classList.add("warning")
+if(time<20){
+beep(150,60);
+document.getElementById("alarmLight").classList.add("alarm-on");
+}(150,60);
 
 if(time<=0){
-
-clearInterval(timer)
-
-showPopup("HOZZÁFÉRÉS MEGTAGADVA",false)
-
+alert("REACTOR MELTDOWN");
+location.reload();
 }
 
-},1000)
+},1000);
 
-updateDisplay()
+updateDisplay();
 
 </script>
 
